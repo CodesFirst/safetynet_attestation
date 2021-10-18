@@ -1,7 +1,10 @@
 # Flutter SafetyNet Attestation plugin for Android
 
-# Note
-This plugin was updated from the author Edouard Marquez <moi@edouard-marquez.me>, original package https://github.com/g123k/flutter_safetynet_attestation
+### Note
+Original repository: https://github.com/g123k/flutter_safetynet_attestation
+
+The problem with the original repository is that it has not been updated since 2019, for this reason this repository was created in order to maintain an updated code and eliminate the warning message when compiling a flutter application.
+
 
 ## What is SafetyNet?
 
