@@ -5,7 +5,6 @@ Original repository: https://github.com/g123k/flutter_safetynet_attestation
 
 The problem with the original repository is that it has not been updated since 2019, for this reason this repository was created in order to maintain an updated code and eliminate the warning message when compiling a flutter application.
 
-
 ## What is SafetyNet?
 
 >The SafetyNet Attestation API helps you assess the security and compatibility of the Android environments in which your apps run. You can use this API to analyze devices that have installed your app.'

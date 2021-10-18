@@ -1,6 +1,6 @@
 name: safetynet_attestation
 description: SafetyNet Attestation API for Flutter (Android only)
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/CodesFirst/safetynet_attestation
 
 environment:

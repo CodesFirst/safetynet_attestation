@@ -91,6 +91,7 @@ class _SafetyNetAttestationWidgetState
             isLoading = true;
           });
         },
+        color: Colors.blueAccent,
         child: const Text('Request SafetyNet Attestation'),
       );
     }
