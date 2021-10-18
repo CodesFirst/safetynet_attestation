@@ -36,13 +36,13 @@ The plugin won't work iOS, because SafetyNet is only available for Android devic
 The _SafetyNet API_ is requiring a working version of the Google Play Services. A method is available to check if they are available on the device:
 
 ```dart
-FlutterSafetynetAttestation.googlePlayServicesAvailability();
+SafetynetAttestation.googlePlayServicesAvailability();
 ```
 
 Then you have to pass a nonce (in a _String_ or a _byte array_) to the following method:
 
 ```dart
-FlutterSafetynetAttestation.safetyNetAttestationJwt('<your-nonce>');
+SafetynetAttestation.safetyNetAttestationJwt('<your-nonce>');
 ```
 
 It will then return a JWT string. Google recommends to check this JWT on your server. Please read the [official documentation for more details](https://developer.android.com/training/safetynet/attestation#architecture).
@@ -50,10 +50,10 @@ It will then return a JWT string. Google recommends to check this JWT on your se
 If you want to get directly the payload from the JWT string, you can call instead:
 
 ```dart
-FlutterSafetynetAttestation.safetyNetAttestationPayload('<your-nonce>');
+SafetynetAttestation.safetyNetAttestationPayload('<your-nonce>');
 ```
 
-You will then receive a _JWSPayload_ object with this kind of content:
+You will then receive a _JWSPayloadModel_ object with this kind of content:
 ```json
 {
   "nonce": "R2Rra24fVm5xa2Mg",
