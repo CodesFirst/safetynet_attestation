@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+//Model principal
 class JWSPayloadModel {
   final String nonce;
   final int timestampMs;
@@ -9,28 +10,27 @@ class JWSPayloadModel {
   final bool ctsProfileMatch;
   final bool basicIntegrity;
 
-  
-  JWSPayloadModel({
-    required this.nonce, 
-    required this.timestampMs, 
-    required this.apkPackageName, 
-    required this.apkCertificateDigestSha256, 
-    required this.apkDigestSha256, 
-    required this.ctsProfileMatch, 
-    required this.basicIntegrity});
-       
+  JWSPayloadModel(
+      {required this.nonce,
+      required this.timestampMs,
+      required this.apkPackageName,
+      required this.apkCertificateDigestSha256,
+      required this.apkDigestSha256,
+      required this.ctsProfileMatch,
+      required this.basicIntegrity});
 
-  factory JWSPayloadModel.fromJSON(Map<String, dynamic> json) => JWSPayloadModel(
-        nonce: json["nonce"],
-        timestampMs: json["timestampMs"],
-        apkPackageName: json["apkPackageName"],
-        apkCertificateDigestSha256: List.from(json["apkCertificateDigestSha256"]),
-        apkDigestSha256: json["apkDigestSha256"],
-        ctsProfileMatch: json["ctsProfileMatch"],
-        basicIntegrity: json["basicIntegrity"]
-  );
+  factory JWSPayloadModel.fromJSON(Map<String, dynamic> json) =>
+      JWSPayloadModel(
+          nonce: json["nonce"],
+          timestampMs: json["timestampMs"],
+          apkPackageName: json["apkPackageName"],
+          apkCertificateDigestSha256:
+              List.from(json["apkCertificateDigestSha256"]),
+          apkDigestSha256: json["apkDigestSha256"],
+          ctsProfileMatch: json["ctsProfileMatch"],
+          basicIntegrity: json["basicIntegrity"]);
 
-
+  //Override methos toString
   @override
   String toString() {
     return 'nonce: $nonce\n'
@@ -42,6 +42,7 @@ class JWSPayloadModel {
         'basicIntegrity: $basicIntegrity';
   }
 
+  //Decoder
   String toJSON() {
     return jsonEncode({
       'nonce': nonce,
@@ -54,4 +55,3 @@ class JWSPayloadModel {
     });
   }
 }
-

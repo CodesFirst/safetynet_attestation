@@ -1,6 +1,6 @@
 name: safetynet_attestation
-description: SafetyNet Attestation API for Flutter (Android only)
-version: 0.0.2
+description: SafetyNet Attestation API for Flutter (Android only). The SafetyNet Attestation API is an anti-abuse API that allows app developers to assess the Android device their app is running on.
+version: 0.0.3
 homepage: https://github.com/CodesFirst/safetynet_attestation
 
 environment:

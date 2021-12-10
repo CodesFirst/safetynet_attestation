@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -14,9 +13,11 @@ class SafetynetAttestation {
     return version;
   }
 
-  static Future<GooglePlayServicesAvailability?> googlePlayServicesAvailability() async {
+  //Check if you have the google play service enabled
+  static Future<GooglePlayServicesAvailability?>
+      googlePlayServicesAvailability() async {
     final String result =
-    await _channel.invokeMethod('checkGooglePlayServicesAvailability');
+        await _channel.invokeMethod('checkGooglePlayServicesAvailability');
 
     switch (result) {
       case 'success':
@@ -57,7 +58,8 @@ class SafetynetAttestation {
 
   /// Request the Safety Net Attestation with a String nonce
   /// The response is the payload from the JSON Web Signature (JWS)
-  static Future<JWSPayloadModel> safetyNetAttestationPayload(String nonce) async {
+  static Future<JWSPayloadModel> safetyNetAttestationPayload(
+      String nonce) async {
     final String payload = await _channel.invokeMethod(
         'requestSafetyNetAttestation',
         {"nonce_string": nonce, "include_payload": true});
@@ -77,6 +79,7 @@ class SafetynetAttestation {
   }
 }
 
+//Enum of options
 enum GooglePlayServicesAvailability {
   success,
   serviceMissing,
