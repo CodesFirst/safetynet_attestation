@@ -3,6 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/safetynet_attestation.iml" filepath="$PROJECT_DIR$/.idea/modules/safetynet_attestation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/safetynet_attestation.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/safetynet_attestation.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/safetynet_attestation.main.iml" filepath="$PROJECT_DIR$/.idea/modules/safetynet_attestation.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/safetynet_attestation.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/safetynet_attestation.unitTest.iml" />
     </modules>
   </component>
 </project>

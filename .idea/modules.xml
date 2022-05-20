@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/safetynet_attestation.iml" filepath="$PROJECT_DIR$/safetynet_attestation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/safetynet_attestation_android.iml" filepath="$PROJECT_DIR$/android/safetynet_attestation_android.iml" />
     </modules>
   </component>
 </project>
