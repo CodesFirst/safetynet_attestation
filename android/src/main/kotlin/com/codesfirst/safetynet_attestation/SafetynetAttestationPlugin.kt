@@ -7,36 +7,9 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import android.app.Activity
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.api.CommonStatusCodes
-
-import com.google.android.gms.common.api.ApiException
-
-import com.google.android.gms.tasks.OnFailureListener
-
-import com.google.android.gms.tasks.OnSuccessListener
-
-import com.google.android.gms.tasks.Task
-import android.text.TextUtils
-import android.util.Log
-import com.google.android.gms.safetynet.SafetyNet
-import com.google.android.gms.safetynet.SafetyNetApi
-import com.google.android.gms.safetynet.SafetyNetClient
-import com.nimbusds.jose.JWSObject
-import io.flutter.embedding.engine.plugins.activity.ActivityAware
-import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
-import java.io.IOException
-
-import java.security.SecureRandom
-
-import java.io.ByteArrayOutputStream
-import java.text.ParseException
-
 
 /** SafetynetAttestationPlugin */
-class SafetynetAttestationPlugin(): FlutterPlugin, MethodCallHandler, ActivityAware {
+class SafetynetAttestationPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
   private var activity: Activity? = null
   private val ANDROID_MANIFEST_METADATA_SAFETY_API_KEY = "safetynet_api_key"
 
@@ -46,6 +19,7 @@ class SafetynetAttestationPlugin(): FlutterPlugin, MethodCallHandler, ActivityAw
   /// when the Flutter Engine is detached from the Activity
   private lateinit var channel : MethodChannel
 
+  // The Methods add is for get context activity
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
     this.activity = binding.activity;
   }
@@ -57,6 +31,7 @@ class SafetynetAttestationPlugin(): FlutterPlugin, MethodCallHandler, ActivityAw
   }
 
   override fun onDetachedFromActivity() {}
+  //End
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "safetynet_attestation")
@@ -64,7 +39,8 @@ class SafetynetAttestationPlugin(): FlutterPlugin, MethodCallHandler, ActivityAw
   }
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-    when (call.method) {
+     when (call.method) {
+       "getPlatformVersion" -> result.success("Android ${android.os.Build.VERSION.RELEASE}")
       "checkGooglePlayServicesAvailability" -> checkGooglePlayServicesAvailability(result)
       "requestSafetyNetAttestation" -> requestSafetyNetAttestation(call, result)
       else -> result.notImplemented()

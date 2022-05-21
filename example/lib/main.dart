@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:safetynet_attestation/models/jws_payload_model.dart';
 import 'package:safetynet_attestation/safetynet_attestation.dart';
+import 'package:safetynet_attestation/safetynet_attestation_platform_interface.dart';
 
 void main() => runApp(const MyApp());
 
@@ -26,7 +27,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> initPlatformState() async {
     GooglePlayServicesAvailability? gmsAvailability;
     try {
-      gmsAvailability = await SafetynetAttestation.googlePlayServicesAvailability();
+      gmsAvailability = await SafetynetAttestation().googlePlayServicesAvailability();
     } on PlatformException {
       gmsAvailability = null;
     }
@@ -99,7 +100,7 @@ class _SafetyNetAttestationWidgetState extends State<SafetyNetAttestationWidget>
   void requestSafetyNetAttestation() async {
     String dialogTitle, dialogMessage;
     try {
-      JWSPayloadModel res = await SafetynetAttestation.safetyNetAttestationPayload('nonce');
+      JWSPayloadModel res = await SafetynetAttestation().safetyNetAttestationPayload('nonce');
 
       dialogTitle = 'SafetyNet Attestation Payload';
       dialogMessage = res.toString();

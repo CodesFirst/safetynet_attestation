@@ -21,3 +21,7 @@
 ## 0.0.4+2
 
 * fix add document for pub.dev
+
+## 0.0.4+3
+
+* fix add document for pub.dev
