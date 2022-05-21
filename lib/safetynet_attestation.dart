@@ -9,7 +9,8 @@ class SafetynetAttestation {
   }
 
   Future<GooglePlayServicesAvailability?> googlePlayServicesAvailability() {
-    return SafetynetAttestationPlatform.instance.googlePlayServicesAvailability();
+    return SafetynetAttestationPlatform.instance
+        .googlePlayServicesAvailability();
   }
 
   Future<String> safetyNetAttestationJwt(String nonce) {
@@ -17,14 +18,17 @@ class SafetynetAttestation {
   }
 
   Future<String> safetyNetAttestationWithFormattedNonceJwt(Uint8List nonce) {
-    return SafetynetAttestationPlatform.instance.safetyNetAttestationWithFormattedNonceJwt(nonce);
+    return SafetynetAttestationPlatform.instance
+        .safetyNetAttestationWithFormattedNonceJwt(nonce);
   }
 
   Future<JWSPayloadModel> safetyNetAttestationPayload(String nonce) {
-    return SafetynetAttestationPlatform.instance.safetyNetAttestationPayload(nonce);
+    return SafetynetAttestationPlatform.instance
+        .safetyNetAttestationPayload(nonce);
   }
 
-  Future<JWSPayloadModel> safetyNetAttestationWithFormattedNoncePayload(Uint8List nonce) {
+  Future<JWSPayloadModel> safetyNetAttestationWithFormattedNoncePayload(
+      Uint8List nonce) {
     return SafetynetAttestationPlatform.instance
         .safetyNetAttestationWithFormattedNoncePayload(nonce);
   }

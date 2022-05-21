@@ -38,14 +38,16 @@ class MockSafetynetAttestationPlatform
   }
 
   @override
-  Future<JWSPayloadModel> safetyNetAttestationWithFormattedNoncePayload(Uint8List nonce) {
+  Future<JWSPayloadModel> safetyNetAttestationWithFormattedNoncePayload(
+      Uint8List nonce) {
     // TODO: implement safetyNetAttestationWithFormattedNoncePayload
     throw UnimplementedError();
   }
 }
 
 void main() {
-  final SafetynetAttestationPlatform initialPlatform = SafetynetAttestationPlatform.instance;
+  final SafetynetAttestationPlatform initialPlatform =
+      SafetynetAttestationPlatform.instance;
 
   test('$MethodChannelSafetynetAttestation is the default instance', () {
     expect(initialPlatform, isInstanceOf<MethodChannelSafetynetAttestation>());
@@ -53,7 +55,8 @@ void main() {
 
   test('getPlatformVersion', () async {
     SafetynetAttestation safetynetAttestationPlugin = SafetynetAttestation();
-    MockSafetynetAttestationPlatform fakePlatform = MockSafetynetAttestationPlatform();
+    MockSafetynetAttestationPlatform fakePlatform =
+        MockSafetynetAttestationPlatform();
     SafetynetAttestationPlatform.instance = fakePlatform;
 
     expect(await safetynetAttestationPlugin.getPlatformVersion(), '42');

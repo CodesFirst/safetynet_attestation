@@ -25,3 +25,11 @@
 ## 0.0.4+3
 
 * fix add document for pub.dev
+
+## 0.0.4+4
+
+* fix add document for pub.dev
+
+## 0.0.5
+
+* add new architecthure version flutter 3.0

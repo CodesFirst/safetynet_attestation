@@ -11,7 +11,8 @@ abstract class SafetynetAttestationPlatform extends PlatformInterface {
 
   static final Object _token = Object();
 
-  static SafetynetAttestationPlatform _instance = MethodChannelSafetynetAttestation();
+  static SafetynetAttestationPlatform _instance =
+      MethodChannelSafetynetAttestation();
 
   /// The default instance of [SafetynetAttestationPlatform] to use.
   ///
@@ -31,11 +32,13 @@ abstract class SafetynetAttestationPlatform extends PlatformInterface {
   }
 
   Future<GooglePlayServicesAvailability?> googlePlayServicesAvailability() {
-    throw UnimplementedError('googlePlayServicesAvailability() has not been implemented.');
+    throw UnimplementedError(
+        'googlePlayServicesAvailability() has not been implemented.');
   }
 
   Future<String> safetyNetAttestationJwt(String nonce) {
-    throw UnimplementedError('safetyNetAttestationJwt() has not been implemented.');
+    throw UnimplementedError(
+        'safetyNetAttestationJwt() has not been implemented.');
   }
 
   Future<String> safetyNetAttestationWithFormattedNonceJwt(Uint8List nonce) {
@@ -44,10 +47,12 @@ abstract class SafetynetAttestationPlatform extends PlatformInterface {
   }
 
   Future<JWSPayloadModel> safetyNetAttestationPayload(String nonce) {
-    throw UnimplementedError('safetyNetAttestationPayload() has not been implemented.');
+    throw UnimplementedError(
+        'safetyNetAttestationPayload() has not been implemented.');
   }
 
-  Future<JWSPayloadModel> safetyNetAttestationWithFormattedNoncePayload(Uint8List nonce) {
+  Future<JWSPayloadModel> safetyNetAttestationWithFormattedNoncePayload(
+      Uint8List nonce) {
     throw UnimplementedError(
         'safetyNetAttestationWithFormattedNoncePayload() has not been implemented.');
   }
