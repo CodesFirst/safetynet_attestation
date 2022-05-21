@@ -1,5 +1,5 @@
 name: safetynet_attestation_example
-description: Demonstrates how to use the safetynet_attestation plugin.
+description: Demonstrates how to use the safetynet_attestation plugin in Flutter Android.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.

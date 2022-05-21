@@ -48,6 +48,6 @@
         
         <!-- Replace with your SafetyNet Attestation API Key -->
         <meta-data android:name="safetynet_api_key"
-            android:value="youApiKey"/>
+            android:value="you_api_key"/>
     </application>
 </manifest>

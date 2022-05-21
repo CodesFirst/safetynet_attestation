@@ -11,7 +11,7 @@ class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
@@ -75,8 +75,7 @@ class SafetyNetAttestationWidget extends StatefulWidget {
   State<StatefulWidget> createState() => _SafetyNetAttestationWidgetState();
 }
 
-class _SafetyNetAttestationWidgetState
-    extends State<SafetyNetAttestationWidget> {
+class _SafetyNetAttestationWidgetState extends State<SafetyNetAttestationWidget> {
   bool isLoading = false;
 
   @override
@@ -121,7 +120,7 @@ class _SafetyNetAttestationWidgetState
             title: Text(dialogTitle),
             content: Text(dialogMessage),
             actions: <Widget>[
-                MaterialButton(
+              MaterialButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
