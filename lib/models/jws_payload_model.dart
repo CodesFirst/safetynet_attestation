@@ -1,57 +1,125 @@
 import 'dart:convert';
 
-//Model principal
+JWSPayloadModel jwsPayloadModelFromJson(String str) =>
+    JWSPayloadModel.fromJson(json.decode(str));
+
+String jwsPayloadModelToJson(JWSPayloadModel data) =>
+    json.encode(data.toJson());
+
 class JWSPayloadModel {
-  final String nonce;
-  final int timestampMs;
-  final String apkPackageName;
-  final List<dynamic> apkCertificateDigestSha256;
-  final String apkDigestSha256;
-  final bool ctsProfileMatch;
-  final bool basicIntegrity;
+  JWSPayloadModel({
+    required this.requestDetails,
+    required this.appIntegrity,
+    required this.deviceIntegrity,
+    required this.accountDetails,
+  });
 
-  JWSPayloadModel(
-      {required this.nonce,
-      required this.timestampMs,
-      required this.apkPackageName,
-      required this.apkCertificateDigestSha256,
-      required this.apkDigestSha256,
-      required this.ctsProfileMatch,
-      required this.basicIntegrity});
+  RequestDetails requestDetails;
+  AppIntegrity appIntegrity;
+  DeviceIntegrity deviceIntegrity;
+  AccountDetails accountDetails;
 
-  factory JWSPayloadModel.fromJSON(Map<String, dynamic> json) =>
+  factory JWSPayloadModel.fromJson(Map<String, dynamic> json) =>
       JWSPayloadModel(
-          nonce: json["nonce"],
-          timestampMs: json["timestampMs"],
-          apkPackageName: json["apkPackageName"],
-          apkCertificateDigestSha256:
-              List.from(json["apkCertificateDigestSha256"]),
-          apkDigestSha256: json["apkDigestSha256"],
-          ctsProfileMatch: json["ctsProfileMatch"],
-          basicIntegrity: json["basicIntegrity"]);
+        requestDetails: RequestDetails.fromJson(json["requestDetails"]),
+        appIntegrity: AppIntegrity.fromJson(json["appIntegrity"]),
+        deviceIntegrity: DeviceIntegrity.fromJson(json["deviceIntegrity"]),
+        accountDetails: AccountDetails.fromJson(json["accountDetails"]),
+      );
 
-  //Override methos toString
-  @override
-  String toString() {
-    return 'nonce: $nonce\n'
-        'timestampMs: $timestampMs\n'
-        'apkPackageName: $apkPackageName\n'
-        'apkCertificateDigestSha256: $apkCertificateDigestSha256\n'
-        'apkDigestSha256: $apkDigestSha256\n'
-        'ctsProfileMatch: $ctsProfileMatch\n'
-        'basicIntegrity: $basicIntegrity';
-  }
+  Map<String, dynamic> toJson() => {
+        "requestDetails": requestDetails.toJson(),
+        "appIntegrity": appIntegrity.toJson(),
+        "deviceIntegrity": deviceIntegrity.toJson(),
+        "accountDetails": accountDetails.toJson(),
+      };
+}
 
-  //Decoder
-  String toJSON() {
-    return jsonEncode({
-      'nonce': nonce,
-      'timestampMs': timestampMs,
-      'apkPackageName': apkPackageName,
-      'apkCertificateDigestSha256': apkCertificateDigestSha256,
-      'apkDigestSha256': apkDigestSha256,
-      'ctsProfileMatch': ctsProfileMatch,
-      'basicIntegrity': basicIntegrity
-    });
-  }
+class AccountDetails {
+  AccountDetails({
+    required this.appLicensingVerdict,
+  });
+
+  String appLicensingVerdict;
+
+  factory AccountDetails.fromJson(Map<String, dynamic> json) => AccountDetails(
+        appLicensingVerdict: json["appLicensingVerdict"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "appLicensingVerdict": appLicensingVerdict,
+      };
+}
+
+class AppIntegrity {
+  AppIntegrity({
+    required this.appRecognitionVerdict,
+    required this.packageName,
+    required this.certificateSha256Digest,
+    required this.versionCode,
+  });
+
+  String appRecognitionVerdict;
+  String packageName;
+  List<String> certificateSha256Digest;
+  String versionCode;
+
+  factory AppIntegrity.fromJson(Map<String, dynamic> json) => AppIntegrity(
+        appRecognitionVerdict: json["appRecognitionVerdict"],
+        packageName: json["packageName"],
+        certificateSha256Digest:
+            List<String>.from(json["certificateSha256Digest"].map((x) => x)),
+        versionCode: json["versionCode"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "appRecognitionVerdict": appRecognitionVerdict,
+        "packageName": packageName,
+        "certificateSha256Digest":
+            List<dynamic>.from(certificateSha256Digest.map((x) => x)),
+        "versionCode": versionCode,
+      };
+}
+
+class DeviceIntegrity {
+  DeviceIntegrity({
+    required this.deviceRecognitionVerdict,
+  });
+
+  List<String> deviceRecognitionVerdict;
+
+  factory DeviceIntegrity.fromJson(Map<String, dynamic> json) =>
+      DeviceIntegrity(
+        deviceRecognitionVerdict:
+            List<String>.from(json["deviceRecognitionVerdict"].map((x) => x)),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "deviceRecognitionVerdict":
+            List<dynamic>.from(deviceRecognitionVerdict.map((x) => x)),
+      };
+}
+
+class RequestDetails {
+  RequestDetails({
+    required this.requestPackageName,
+    required this.timestampMillis,
+    required this.nonce,
+  });
+
+  String requestPackageName;
+  String timestampMillis;
+  String nonce;
+
+  factory RequestDetails.fromJson(Map<String, dynamic> json) => RequestDetails(
+        requestPackageName: json["requestPackageName"],
+        timestampMillis: json["timestampMillis"],
+        nonce: json["nonce"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "requestPackageName": requestPackageName,
+        "timestampMillis": timestampMillis,
+        "nonce": nonce,
+      };
 }

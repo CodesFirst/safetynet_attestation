@@ -1,13 +1,6 @@
 package com.codesfirst.safetynet_attestation
 
-import android.os.Bundle
-
 import android.content.pm.PackageManager
-
-import android.content.pm.ApplicationInfo
-
-import androidx.annotation.NonNull
-
 import android.content.Context
 import androidx.annotation.Nullable
 

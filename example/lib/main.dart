@@ -27,8 +27,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> initPlatformState() async {
     GooglePlayServicesAvailability? gmsAvailability;
     try {
-      gmsAvailability =
-          await SafetynetAttestation().googlePlayServicesAvailability();
+      gmsAvailability = await SafetynetAttestation().googlePlayServicesAvailability();
     } on PlatformException {
       gmsAvailability = null;
     }
@@ -77,8 +76,7 @@ class SafetyNetAttestationWidget extends StatefulWidget {
   State<StatefulWidget> createState() => _SafetyNetAttestationWidgetState();
 }
 
-class _SafetyNetAttestationWidgetState
-    extends State<SafetyNetAttestationWidget> {
+class _SafetyNetAttestationWidgetState extends State<SafetyNetAttestationWidget> {
   bool isLoading = false;
 
   @override
@@ -103,10 +101,13 @@ class _SafetyNetAttestationWidgetState
     String dialogTitle, dialogMessage;
     try {
       JWSPayloadModel res =
-          await SafetynetAttestation().safetyNetAttestationPayload('nonce');
+          await SafetynetAttestation().playIntegrityApiManualPayload(projectNumber: 1);
+
+      // JWSPayloadModel res = await SafetynetAttestation()
+      //     .playIntegrityApiPayload(projectNumber: 1, token: "adasdasdasdas");
 
       dialogTitle = 'SafetyNet Attestation Payload';
-      dialogMessage = res.toString();
+      dialogMessage = res.accountDetails.appLicensingVerdict;
     } catch (e) {
       dialogTitle = 'ERROR - SafetyNet Attestation Payload';
 

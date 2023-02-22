@@ -1,6 +1,5 @@
-import 'dart:typed_data';
+import 'package:safetynet_attestation/models/jws_payload_model.dart';
 
-import 'models/jws_payload_model.dart';
 import 'safetynet_attestation_platform_interface.dart';
 
 class SafetynetAttestation {
@@ -8,28 +7,26 @@ class SafetynetAttestation {
     return SafetynetAttestationPlatform.instance.getPlatformVersion();
   }
 
+  Future<JWSPayloadModel> playIntegrityApiPayload({
+    required int projectNumber,
+    required String token,
+  }) {
+    return SafetynetAttestationPlatform.instance
+        .playIntegrityApiPayload(projectNumber: projectNumber, token: token);
+  }
+
+  Future<JWSPayloadModel> playIntegrityApiManualPayload({
+    required int projectNumber,
+    String keyType = "EC",
+  }) {
+    return SafetynetAttestationPlatform.instance.playIntegrityApiManualPayload(
+      projectNumber: projectNumber,
+      keyType: keyType,
+    );
+  }
+
   Future<GooglePlayServicesAvailability?> googlePlayServicesAvailability() {
     return SafetynetAttestationPlatform.instance
         .googlePlayServicesAvailability();
-  }
-
-  Future<String> safetyNetAttestationJwt(String nonce) {
-    return SafetynetAttestationPlatform.instance.safetyNetAttestationJwt(nonce);
-  }
-
-  Future<String> safetyNetAttestationWithFormattedNonceJwt(Uint8List nonce) {
-    return SafetynetAttestationPlatform.instance
-        .safetyNetAttestationWithFormattedNonceJwt(nonce);
-  }
-
-  Future<JWSPayloadModel> safetyNetAttestationPayload(String nonce) {
-    return SafetynetAttestationPlatform.instance
-        .safetyNetAttestationPayload(nonce);
-  }
-
-  Future<JWSPayloadModel> safetyNetAttestationWithFormattedNoncePayload(
-      Uint8List nonce) {
-    return SafetynetAttestationPlatform.instance
-        .safetyNetAttestationWithFormattedNoncePayload(nonce);
   }
 }

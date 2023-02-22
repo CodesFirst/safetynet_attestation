@@ -1,40 +1,54 @@
 package com.codesfirst.safetynet_attestation
 
+import android.app.Activity
+import android.text.TextUtils
+import android.util.Base64
+import android.util.Log
 import androidx.annotation.NonNull
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.gms.tasks.Task
+import com.google.android.play.core.integrity.IntegrityManagerFactory
+import com.google.android.play.core.integrity.IntegrityTokenRequest
+import com.google.android.play.core.integrity.IntegrityTokenResponse
+import com.google.android.gms.common.GoogleApiAvailability
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import android.app.Activity
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.tasks.Task
-import android.text.TextUtils
-import com.google.android.gms.safetynet.SafetyNet
-import com.google.android.gms.safetynet.SafetyNetApi
-import com.google.android.gms.safetynet.SafetyNetClient
-import com.nimbusds.jose.JWSObject
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import okhttp3.*
+import org.jose4j.jwe.JsonWebEncryption
+import org.jose4j.jws.JsonWebSignature
+import org.jose4j.jwx.JsonWebStructure
 import java.io.IOException
-import java.security.SecureRandom
-import java.io.ByteArrayOutputStream
-import java.text.ParseException
+import java.net.URL
+import java.security.KeyFactory
+import java.security.PublicKey
+import java.security.spec.X509EncodedKeySpec
+import javax.crypto.SecretKey
+import javax.crypto.spec.SecretKeySpec
+import kotlin.math.floor
 
 /** SafetynetAttestationPlugin */
 class SafetynetAttestationPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
-  private var activity: Activity? = null
-  private val ANDROID_MANIFEST_METADATA_SAFETY_API_KEY = "safetynet_api_key"
-
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
   private lateinit var channel : MethodChannel
+
+  private var activity: Activity? = null
+
+  /** Private Service: https://www.googleapis.com/auth/playintegrity.  */
+  private val urlPlayIntegrity:String = "https://playintegrity.googleapis.com"
+
+  private val DECRYPTION_KEY = "decryption_api_key"
+  private val VERIFICATION_KEY = "verification_key"
 
   // The Methods add is for get context activity
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
@@ -56,11 +70,20 @@ class SafetynetAttestationPlugin: FlutterPlugin, MethodCallHandler, ActivityAwar
   }
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-     when (call.method) {
-       "getPlatformVersion" -> result.success("Android ${android.os.Build.VERSION.RELEASE}")
+    when (call.method) {
+        "getPlatformVersion" -> {
+          result.success("Android ${android.os.Build.VERSION.RELEASE}")
+        }
       "checkGooglePlayServicesAvailability" -> checkGooglePlayServicesAvailability(result)
-      "requestSafetyNetAttestation" -> requestSafetyNetAttestation(call, result)
-      else -> result.notImplemented()
+        "requestPlayIntegrityApi" -> {
+          requestPlayIntegrityApi(call, result)
+        }
+      "requestPlayIntegrityApiManual" -> {
+        requestPlayIntegrityApiManual(call, result)
+      }
+        else -> {
+          result.notImplemented()
+        }
     }
   }
 
@@ -68,44 +91,170 @@ class SafetynetAttestationPlugin: FlutterPlugin, MethodCallHandler, ActivityAwar
     channel.setMethodCallHandler(null)
   }
 
-  //Method of channel
-  private fun checkApiKeyInManifest(): Boolean {
-    return !TextUtils.isEmpty(getSafetyNetApiKey())
-  }
 
-  private fun getNonceFrom(call: MethodCall): ByteArray? {
-    return when {
-        call.hasArgument("nonce_bytes") -> {
-          call.argument("nonce_bytes")
-        }
-        call.hasArgument("nonce_string") -> {
-          getRequestNonce(call.argument("nonce_string") as? String ?: "")
-        }
-        else -> {
-          null
-        }
+  private fun requestPlayIntegrityApi(call: MethodCall, result: Result) {
+    if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity!!)
+      != ConnectionResult.SUCCESS) {
+      result.error("Error", "Google Play Services are not available, please call the checkGooglePlayServicesAvailability() method to understand why", null)
+      return
+    } else if (!call.hasArgument("cloud_project_number")) {
+      result.error("Error", "Please include the cloud_project_number in the request", null)
+      return
+    } else if (!call.hasArgument("token")) {
+      result.error("Error", "Please include the cloud_project_number in the request", null)
+      return
+    }
+
+
+
+    // Check nonce
+    val nonce: String = this.generateNonce() ?: ""
+    val cloudProjectNumber: Long = call.argument("cloud_project_number") as Long? ?: 0
+    val tokenBearer: String = call.argument("token") as String? ?: ""
+
+    if (nonce == null || nonce.length < 16) {
+      result.error("Error", "The nonce should be larger than the 16 bytes", null)
+      return
+    }
+
+    //log.d("API", nonce)
+
+    // Create an instance of a manager.
+    val integrityManager =
+      IntegrityManagerFactory.create(activity)
+
+    // Request the integrity token by providing a nonce.
+    val integrityTokenResponse: Task<IntegrityTokenResponse> =
+      integrityManager.requestIntegrityToken(
+        IntegrityTokenRequest.builder()
+          .setCloudProjectNumber(cloudProjectNumber)
+          .setNonce(nonce)
+          .build())
+
+    integrityTokenResponse.addOnSuccessListener { integrityTokenResponse1: IntegrityTokenResponse ->
+      val integrityToken = integrityTokenResponse1.token()
+      //log.d("API", integrityToken)
+      this.requestPlayIntegrity(integrityToken, tokenBearer, result)
+    }
+
+    integrityTokenResponse.addOnFailureListener { e ->
+      e.printStackTrace()
+      if (e is ApiException) {
+        result.error("Error",
+          CommonStatusCodes.getStatusCodeString(e.statusCode) + " : " +
+                  e.message, null)
+      } else {
+        result.error("Error", e.message, null)
+      }
     }
   }
 
-  private fun getRequestNonce(data: String): ByteArray? {
-    val byteStream = ByteArrayOutputStream()
-    val bytes = ByteArray(24)
-    SecureRandom().nextBytes(bytes)
-    try {
-      byteStream.write(bytes)
-      byteStream.write(data.toByteArray())
-    } catch (e: IOException) {
-      return null
+  private fun requestPlayIntegrityApiManual(call: MethodCall, result: Result) {
+    if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity!!)
+      != ConnectionResult.SUCCESS) {
+      result.error("Error", "Google Play Services are not available, please call the checkGooglePlayServicesAvailability() method to understand why", null)
+      return
     }
-    return byteStream.toByteArray()
-  }
+    else if (!checkDecryptionKeyInManifest()) {
+      result.error("Error", "The Decryption Key is missing in the manifest", null)
+      return
+    }
+    else if (!checkVerificationKeyInManifest()) {
+      result.error("Error", "The Verification Key is missing in the manifest", null)
+      return
+    }
+    else if (!call.hasArgument("cloud_project_number")) {
+      result.error("Error", "Please include the cloud_project_number in the request", null)
+      return
+    }
+    //log.d("API", "INICIAO")
+    // Check nonce
+    val nonce: String = this.generateNonce() ?: ""
+    //log.d("API", "1")
+    val cloudProjectNumber: Long = call.argument("cloud_project_number") as Long? ?: 0
+    //log.d("API", "2")
+    val ecKeyType: String = call.argument("ec_key_type") as String? ?: "EC"
+    //log.d("API", "3")
+    if (nonce == null || nonce.length < 16) {
+      result.error("Error", "The nonce should be larger than the 16 bytes", null)
+      return
+    }
 
-  private fun getSafetyNetApiKey(): String? {
-    return Utils.getMetadataFromManifest(activity!!, ANDROID_MANIFEST_METADATA_SAFETY_API_KEY)
+    //log.d("API", nonce)
+
+    // Create an instance of a manager.
+    val integrityManager =
+      IntegrityManagerFactory.create(activity)
+
+    // Request the integrity token by providing a nonce.
+    val integrityTokenResponse: Task<IntegrityTokenResponse> =
+      integrityManager.requestIntegrityToken(
+        IntegrityTokenRequest.builder()
+          .setCloudProjectNumber(cloudProjectNumber)
+          .setNonce(nonce)
+          .build())
+
+    integrityTokenResponse.addOnSuccessListener { integrityTokenResponse1: IntegrityTokenResponse ->
+      val integrityToken = integrityTokenResponse1.token()
+      //log.d("API", integrityToken)
+
+      try {
+        // base64OfEncodedDecryptionKey is provided through Play Console.
+        var decryptionKeyBytes: ByteArray =
+          Base64.decode(getDecryptionKey(), Base64.DEFAULT)
+
+        // Deserialized encryption (symmetric) key.
+        var decryptionKey: SecretKey = SecretKeySpec(
+          decryptionKeyBytes,
+          0,
+          decryptionKeyBytes.size,
+          "AES"
+        )
+
+        // base64OfEncodedVerificationKey is provided through Play Console.
+        var encodedVerificationKey: ByteArray =
+          Base64.decode(getVerificationKey(), Base64.DEFAULT)
+
+        // Deserialized verification (public) key.
+        var verificationKey: PublicKey = KeyFactory.getInstance(ecKeyType)
+          .generatePublic(X509EncodedKeySpec(encodedVerificationKey))
+
+        val jwe: JsonWebEncryption =
+          JsonWebStructure.fromCompactSerialization(integrityToken) as JsonWebEncryption
+        jwe.key = decryptionKey
+
+        // This also decrypts the JWE token.
+        val compactJws: String = jwe.payload
+        //log.d("payload1", compactJws)
+        val jws: JsonWebSignature =
+          JsonWebStructure.fromCompactSerialization(compactJws) as JsonWebSignature
+        jws.key = verificationKey
+
+        // This also verifies the signature.
+        val payload: String = jws.payload
+        //log.d("payload2", payload)
+        result.success(payload)
+
+      } catch (e: Exception) {
+        result.error("Error", e.message, null)
+      }
+
+    }
+
+    integrityTokenResponse.addOnFailureListener { e ->
+      e.printStackTrace()
+      if (e is ApiException) {
+        result.error("Error",
+          CommonStatusCodes.getStatusCodeString(e.statusCode) + " : " +
+                  e.message, null)
+      } else {
+        result.error("Error", e.message, null)
+      }
+    }
   }
 
   private fun checkGooglePlayServicesAvailability(result: Result) {
-    when (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity)) {
+    when (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity!!)) {
       ConnectionResult.SUCCESS -> result.success("success")
       ConnectionResult.SERVICE_MISSING -> result.success("serviceMissing")
       ConnectionResult.SERVICE_UPDATING -> result.success("serviceUpdating")
@@ -116,50 +265,88 @@ class SafetynetAttestationPlugin: FlutterPlugin, MethodCallHandler, ActivityAwar
     }
   }
 
-  private fun requestSafetyNetAttestation(call: MethodCall, result: Result) {
-    if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity)
-            != ConnectionResult.SUCCESS) {
-      result.error("Error", "Google Play Services are not available, please call the checkGooglePlayServicesAvailability() method to understand why", null)
-      return
-    } else if (!checkApiKeyInManifest()) {
-      result.error("Error", "The SafetyNet API Key is missing in the manifest", null)
-      return
-    } else if (!call.hasArgument("nonce_bytes") && !call.hasArgument("nonce_string")) {
-      result.error("Error", "Please include the nonce in the request", null)
+  private fun generateNonce(): String? {
+    return try {
+      val length = 50
+      var nonce = ""
+      val allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+      for (i in 0 until length) {
+        nonce += allowed[floor(Math.random() * allowed.length).toInt()].toString()
+      }
+      nonce
+    } catch (e: Exception) {
+      null
+    }
+  }
+
+  private fun requestPlayIntegrity(token:String, bearer: String, result: Result) {
+    try {
+      var client: OkHttpClient = OkHttpClient();
+
+      val formBody: RequestBody = FormBody.Builder()
+        .add("integrity_token", token)
+        .build()
+
+      val url = URL(urlPlayIntegrity+ "/v1/com.codesfirst.codcal:decodeIntegrityToken")
+      //log.d("URL", url.path)
+      // Build request
+      val request = Request.Builder().addHeader("Authorization", "bearer $token").post(formBody).url(url).build()
+      //log.d("URL", "build")
+      // Execute request
+      client.newCall(request).enqueue(object : Callback {
+        override fun onFailure(call: Call, e: IOException) {
+          //log.d("URL", "error")
+          result.error("Api request error", "Error when executing get request: "+e.localizedMessage, null)
+        }
+
+        override fun onResponse(call: Call, response: Response) {
+          response.use {
+            //log.d("URL", "ok")
+            if (!response.isSuccessful) {
+              //log.d("URL", "ok perro error" + response.code)
+              result.error("Api request error", "Error code: " + response.code, null)
+              return
+            }
+            val responseBody: ResponseBody? = response.body
+            if (responseBody == null) {
+              result.error("Api request error", "Error code: " + response.code, null)
+              return
+            }
+            result.success(responseBody.string())
+
+            //log.d("URL",response.body!!.string())
+          }
+        }
+      })
+      //val response = client.newCall(request).execute()
+      //result = response.body?.string()
+      //log.d("URL", "response")
+
+
+    }
+    catch(err:Error) {
+      result.error("Api request error", "Error when executing get request: "+err.localizedMessage, null)
       return
     }
 
-    // Check nonce
-    val nonce: ByteArray? = getNonceFrom(call)
-    if (nonce == null || nonce.size < 16) {
-      result.error("Error", "The nonce should be larger than the 16 bytes", null)
-      return
-    }
-    val client: SafetyNetClient = SafetyNet.getClient(activity!!)
-    val task: Task<SafetyNetApi.AttestationResponse> = client.attest(nonce, getSafetyNetApiKey() ?: "")
-    var includePayload:Boolean = false;
-    if(call.hasArgument("include_payload")) includePayload = call.argument("include_payload") as? Boolean ?: false
-    task.addOnSuccessListener(activity) { attestationResponse ->
-      if (includePayload) {
-        try {
-          val jwsObject: JWSObject = JWSObject.parse(attestationResponse.jwsResult)
-          result.success(jwsObject.payload.toString())
-        } catch (e: ParseException) {
-          e.printStackTrace()
-          result.error("Error", e.message, null)
-        }
-      } else {
-        result.success(attestationResponse.jwsResult)
-      }
-    }.addOnFailureListener(activity) { e ->
-      e.printStackTrace()
-      if (e is ApiException) {
-        result.error("Error",
-                CommonStatusCodes.getStatusCodeString(e.statusCode) + " : " +
-                        e.message, null)
-      } else {
-        result.error("Error", e.message, null)
-      }
-    }
   }
+
+  private fun checkDecryptionKeyInManifest(): Boolean {
+    //log.d("API", "checkDecryptionKeyInManifest")
+    return !TextUtils.isEmpty(getDecryptionKey())
+  }
+
+  private fun checkVerificationKeyInManifest(): Boolean {
+    //log.d("API", "checkVerificationKeyInManifest")
+    return !TextUtils.isEmpty(getVerificationKey())
+  }
+
+  private fun getDecryptionKey(): String? {
+    return Utils.getMetadataFromManifest(activity!!, DECRYPTION_KEY)
+  }
+
+  private fun getVerificationKey(): String? {
+    return Utils.getMetadataFromManifest(activity!!, VERIFICATION_KEY)
+  }
+
 }
