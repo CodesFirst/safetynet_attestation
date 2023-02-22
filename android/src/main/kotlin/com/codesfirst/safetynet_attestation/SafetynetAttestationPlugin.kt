@@ -101,9 +101,15 @@ class SafetynetAttestationPlugin: FlutterPlugin, MethodCallHandler, ActivityAwar
       result.error("Error", "Please include the cloud_project_number in the request", null)
       return
     } else if (!call.hasArgument("token")) {
-      result.error("Error", "Please include the cloud_project_number in the request", null)
+      result.error("Error", "Please include the token in the request", null)
       return
     }
+    else if (!call.hasArgument("application_id")) {
+      result.error("Error", "Please include the application_id in the request", null)
+      return
+    }
+
+
 
 
 
@@ -111,6 +117,7 @@ class SafetynetAttestationPlugin: FlutterPlugin, MethodCallHandler, ActivityAwar
     val nonce: String = this.generateNonce() ?: ""
     val cloudProjectNumber: Long = call.argument("cloud_project_number") as Long? ?: 0
     val tokenBearer: String = call.argument("token") as String? ?: ""
+    val applicationId: String = call.argument("application_id") as String? ?: ""
 
     if (nonce == null || nonce.length < 16) {
       result.error("Error", "The nonce should be larger than the 16 bytes", null)
@@ -134,7 +141,7 @@ class SafetynetAttestationPlugin: FlutterPlugin, MethodCallHandler, ActivityAwar
     integrityTokenResponse.addOnSuccessListener { integrityTokenResponse1: IntegrityTokenResponse ->
       val integrityToken = integrityTokenResponse1.token()
       //log.d("API", integrityToken)
-      this.requestPlayIntegrity(integrityToken, tokenBearer, result)
+      this.requestPlayIntegrity(integrityToken, tokenBearer, applicationId, result)
     }
 
     integrityTokenResponse.addOnFailureListener { e ->
@@ -279,7 +286,7 @@ class SafetynetAttestationPlugin: FlutterPlugin, MethodCallHandler, ActivityAwar
     }
   }
 
-  private fun requestPlayIntegrity(token:String, bearer: String, result: Result) {
+  private fun requestPlayIntegrity(token:String, bearer: String, applicationId: String, result: Result) {
     try {
       var client: OkHttpClient = OkHttpClient();
 
@@ -287,7 +294,7 @@ class SafetynetAttestationPlugin: FlutterPlugin, MethodCallHandler, ActivityAwar
         .add("integrity_token", token)
         .build()
 
-      val url = URL(urlPlayIntegrity+ "/v1/com.codesfirst.codcal:decodeIntegrityToken")
+      val url = URL("$urlPlayIntegrity/v1/$applicationId:decodeIntegrityToken")
       //log.d("URL", url.path)
       // Build request
       val request = Request.Builder().addHeader("Authorization", "bearer $token").post(formBody).url(url).build()

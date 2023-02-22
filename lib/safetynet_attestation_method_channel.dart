@@ -25,11 +25,13 @@ class MethodChannelSafetynetAttestation extends SafetynetAttestationPlatform {
   Future<JWSPayloadModel> playIntegrityApiPayload({
     required int projectNumber,
     required String token,
+    required String applicationId,
   }) async {
     final String payload =
         await methodChannel.invokeMethod('requestPlayIntegrityApi', {
       "cloud_project_number": projectNumber,
       "token": token,
+      "application_id": applicationId,
     });
 
     return JWSPayloadModel.fromJson(jsonDecode(payload));

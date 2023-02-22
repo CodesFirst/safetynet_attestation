@@ -32,6 +32,7 @@ abstract class SafetynetAttestationPlatform extends PlatformInterface {
   Future<JWSPayloadModel> playIntegrityApiPayload({
     required int projectNumber,
     required String token,
+    required String applicationId,
   }) {
     throw UnimplementedError(
         'playIntegrityApiPayload() has not been implemented.');

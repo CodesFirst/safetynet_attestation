@@ -74,7 +74,7 @@ It will then return a JWT string.
 Now if you want to make the call automatically, you must pass the cloud project number and the token generated from auth2:
 
 ```dart
-SafetynetAttestation.playIntegrityApiPayload(projectNumber: 1, token: "jsdkjlaskdjasjldjkasjjdl;asjkldjaskldjkjaskldjlkajs");
+SafetynetAttestation.playIntegrityApiPayload(projectNumber: 1, token: "jsdkjlaskdjasjldjkasjjdl;asjkldjaskldjkjaskldjlkajs", applicationId: "com.codesfirst.example");
 ```
 
 You will then receive a _JWSPayloadModel_ object with this kind of content:

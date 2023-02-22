@@ -10,9 +10,13 @@ class SafetynetAttestation {
   Future<JWSPayloadModel> playIntegrityApiPayload({
     required int projectNumber,
     required String token,
+    required String applicationId,
   }) {
-    return SafetynetAttestationPlatform.instance
-        .playIntegrityApiPayload(projectNumber: projectNumber, token: token);
+    return SafetynetAttestationPlatform.instance.playIntegrityApiPayload(
+      projectNumber: projectNumber,
+      token: token,
+      applicationId: applicationId,
+    );
   }
 
   Future<JWSPayloadModel> playIntegrityApiManualPayload({

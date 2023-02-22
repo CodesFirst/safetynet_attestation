@@ -37,3 +37,7 @@
 ## 1.0.0
 
 - add Api play integrity api android
+
+## 1.0.1
+
+- add application Id with paramethers
